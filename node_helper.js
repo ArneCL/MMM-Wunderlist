@@ -10,7 +10,7 @@
 const NodeHelper = require("node_helper");
 const Fetcher = require("./fetcher.js");
 
-var WunderlistSDK = require('wunderlist');
+var Wunderlist = require('wunderlist-api');
 
 module.exports = NodeHelper.create({
   start: function () {
@@ -20,26 +20,31 @@ module.exports = NodeHelper.create({
   },
 
   getLists: function (callback) {
-    this.WunderlistAPI.http.lists.all()
-      .done(function (lists) {
-        callback(lists);
-      })
-      .fail(function (resp, code) {
-        console.error('there was a Wunderlist problem', code);
+    this.wunderlist.getLists()
+      .then(function (response) {
+        if (response.statusCode == 200) {
+          callback(JSON.parse(response.body));
+        } else {
+          console.error('Failed to retrieve Lists. The Server returned: ', response.statusCode, response.statusMessage)
+        }
+
+      }).catch(function (error) {
+        console.error('There was a Wunderlist problem', error);
       });
   },
 
   getUsers: function (callback) {
-    this.WunderlistAPI.http.users.all()
-      .done(function (users) {
+    this.wunderlist.listUsers()
+      .then(function (response) {
         var ret = {};
-        users.forEach(function (user) {
-          ret[user.id] = user.name[0]
-        });
-        callback(ret);
-      })
-      .fail(function (resp, code) {
-        console.error('there was a Wunderlist problem', code);
+        if (response.statusCode == 200) {
+          JSON.parse(response.body).forEach(function (user) {
+            ret[user.id] = user.name[0]
+          });
+          callback(ret);
+        } else {
+          console.error('Failed to retrieve Users. The Server returned: ', response.statusCode, response.statusMessage)
+        }
       })
   },
 
@@ -94,9 +99,9 @@ module.exports = NodeHelper.create({
     if (notification === "CONFIG" && this.started == false) {
       this.config = payload
 
-      this.WunderlistAPI = new WunderlistSDK({
+      this.wunderlist = new Wunderlist({
         accessToken: self.config.accessToken,
-        clientID: self.config.clientID
+        clientId: self.config.clientID
       })
 
       this.getLists(function (data) {
