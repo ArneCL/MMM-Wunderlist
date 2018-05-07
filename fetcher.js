@@ -7,7 +7,7 @@
  * MIT Licensed.
  */
 
-var WunderlistSDK = require('wunderlist');
+var Wunderlist = require('wunderlist-api');
 var moment = require('moment');
 
 /* Fetcher
@@ -17,7 +17,7 @@ var moment = require('moment');
  * attribute reloadInterval number - Reload interval in milliseconds.
  */
 
-var Fetcher = function (listID, reloadInterval, accessToken, clientID, language, format) {
+var Fetcher = function (listID, reloadInterval, accessToken, clientId, language, format) {
 
   moment.locale(language);
 
@@ -42,27 +42,31 @@ var Fetcher = function (listID, reloadInterval, accessToken, clientID, language,
     clearTimeout(reloadTimer);
     reloadTimer = null;
 
-    var WunderlistAPI = new WunderlistSDK({
+    var wunderlist = new Wunderlist({
       accessToken: accessToken,
-      clientID: clientID
+      clientId: clientId
     });
 
-    WunderlistAPI.http.tasks.forList(listID)
-      .done(function (tasks) {
-        items = localizeTasks(tasks);
-        self.broadcastItems();
-        scheduleTimer();
+    wunderlist.getTasks(listID)
+      .then(function (response) {
+        if (response.statusCode == 200) {
+          items = JSON.parse(response.body)
+          items = localizeTasks(items)
+          self.broadcastItems();
+          scheduleTimer();
+        } else {
+          console.error('Failed to retrieve tasks for ListID:', listID, 'The Server returned: ', response.statusCode, response.statusMessage)
+        }
       })
-      .fail(function (resp, code) {
-        console.error('there was a Wunderlist problem', resp, code);
+      .catch(function (error) {
+        console.error('There was a Wunderlist problem', error);
       });
-
   };
 
   /* localizeTasks(tasks)
    * Localize the given array of tasks
    */
-  
+
   var localizeTasks = function (tasks) {
     tasks.forEach(function (task) {
       task.due_date = moment(task.due_date).format(format);
@@ -70,7 +74,7 @@ var Fetcher = function (listID, reloadInterval, accessToken, clientID, language,
     });
     return tasks;
   }
-
+  
   /* scheduleTimer()
    * Schedule the timer for the next update.
    */

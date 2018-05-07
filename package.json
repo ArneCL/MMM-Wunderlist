@@ -13,14 +13,16 @@
     "module"
   ],
   "author": "Paul-Vincent Roll",
-  "contributors": [ "https://github.com/paviro/MMM-Wunderlist/graphs/contributors" ],
+  "contributors": [
+    "https://github.com/paviro/MMM-Wunderlist/graphs/contributors"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/paviro/MMM-Wunderlist/issues"
   },
   "homepage": "https://github.com/paviro/MMM-Wunderlist#readme",
   "dependencies": {
-    "wunderlist": "latest",
+    "wunderlist-api": "latest",
     "moment": "latest"
   }
 }
