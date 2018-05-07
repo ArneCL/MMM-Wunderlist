@@ -66,7 +66,7 @@ var Fetcher = function (listID, reloadInterval, accessToken, clientId, language,
   /* localizeTasks(tasks)
    * Localize the given array of tasks
    */
-
+  
   var localizeTasks = function (tasks) {
     tasks.forEach(function (task) {
       task.due_date = moment(task.due_date).format(format);
